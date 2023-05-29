@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% load poll_extras %}
+
+
+{% block content %}
+<div>{{ now| date:"SHORT_DATE_FORMAT" }}</div>
+<div>{{ now|date:"D d M Y" }} {{ now|time:"H:i" }}</div>
+<div>{{ not_exist|default:"nothing" }}</div>
+<div>{{ my_str | capfirst }}</div>
+<div>{{ my_list | join:"**" }}</div>
+<div>{{ my_num | add:2 }}</div>
+<div>{{ my_num | num_to_str }}</div>
+<div>{{ my_list | add:my_list }}</div>
+{% endblock %}

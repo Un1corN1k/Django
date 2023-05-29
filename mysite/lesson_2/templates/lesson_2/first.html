@@ -1,0 +1,7 @@
+{% extends 'base.html' %}
+
+{% block content %}
+{% include 'add.html' with name='Vlad' %}
+<div style="padding: 20px; background-color: chocolate"> Extended template first!</div>
+{% include 'add.html' %}
+{% endblock %}
