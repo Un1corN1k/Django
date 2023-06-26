@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>Home Page</h1>
+
+    {% if user.is_authenticated %}
+    <p>Welcome, {{ user.username }}!</p>
+    {% else %}
+
+    <p>Welcome, guest!</p>
+    {% endif %}
+
+        <div style="text-align: center;">
+            <h2>Search:</h2>
+            <form method="GET">
+                <input type="text" name="search" placeholder="Search blogs">
+                <button type="submit">Search</button>
+            </form>
+        </div>
+
+        <h2>Blogs:</h2>
+        {% for blog in blogs %}
+            <div style="border: 1px solid #ccc; padding: 10px; margin-bottom: 20px; position: relative;">
+                <h3>Title: <a href="{% url 'view_post' blog.slug %}">{{ blog.title }}</a></h3>
+                <p>Author: {{ blog.author }}</p>
+                {% if blog.comments.exists %}
+                    <p>Comments:</p>
+                    {% for comment in blog.comments.all %}
+                        <p>{{ comment.content }}</p>
+                    {% endfor %}
+                {% endif %}
+                <a href="{% url 'add_comment' blog.slug %}" style="position: absolute; bottom: 10px; right: 10px; background-color: #0366d6; color: #fff; padding: 5px 10px; border-radius: 5px; text-decoration: none;">Add Comment</a>
+
+                {% if user.is_authenticated and user == blog.author %}
+                    <form method="POST" action="{% url 'delete_post' blog.slug %}" style="position: absolute; bottom: 10px; right: 150px;">
+                        {% csrf_token %}
+                        <button type="submit" style="background-color: #d73a49; color: #fff; padding: 5px 10px; border-radius: 5px; border: none;">Delete Post</button>
+                    </form>
+                {% endif %}
+            </div>
+            {% endfor %}
+{% endblock %}
