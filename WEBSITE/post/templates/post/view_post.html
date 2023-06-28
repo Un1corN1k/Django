@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <style>
+        .comments-container {
+            margin-top: 20px;
+        }
+
+        .comment {
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #f5f5f5;
+        }
+
+        .comment-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .comment-author {
+            font-weight: bold;
+            margin: 0;
+        }
+
+        .comment-content {
+            margin: 0;
+        }
+
+        .comment-date {
+            margin: 0;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .add-comment-link {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #1da1f2;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+
+        .add-comment-link:hover {
+            background-color: #0c87b8;
+        }
+    </style>
+
+    <h1>{{ post.title }}</h1>
+    <p>Topic: {{ post.topic }}</p>
+
+
+    <div>
+        <p>Content: {{ post.content }}</p>
+        <p>Author: {{ post.author }}</p>
+    </div>
+
+    <h2>Comments:</h2>
+    <div class="comments-container">
+        {% for comment in post.comments.all %}
+            <div class="comment">
+                <div class="comment-header">
+                    <p class="comment-author">{{ comment.author }}</p>
+                </div>
+                <p class="comment-content">{{ comment.content }}</p>
+                <p class="comment-date">Posted on: {{ comment.created_at }}</p>
+            </div>
+        {% empty %}
+            <p>No comments found.</p>
+        {% endfor %}
+    </div>
+
+    <a href="{% url 'add_comment' post.slug %}" class="add-comment-link">Add Comment</a>
+{% endblock %}
+
