@@ -1,36 +1,57 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <h1>Home Page</h1>
-
-    {% if user.is_authenticated %}
-    <p>Welcome, {{ user.username }}!</p>
-    {% else %}
-
-    <p>Welcome, guest!</p>
-    {% endif %}
-
-        <div style="text-align: center;">
-            <h2>Search:</h2>
-            <form method="GET">
-                <input type="text" name="search" placeholder="Search blogs">
-                <button type="submit">Search</button>
+<div style="margin-bottom: 20px;">
+            <form method="GET" style="display: flex; justify-content: center;">
+                <input type="text" name="search" placeholder="Search blog" style="width: 300px; padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 5px;">
+                <button type="submit" style="padding: 10px 20px; font-size: 16px; background-color: #0366d6; color: #fff; border: none; border-radius: 5px; cursor: pointer;">Search</button>
             </form>
         </div>
 
-        <h2>Blogs:</h2>
-        {% for blog in blogs %}
-            <div style="border: 1px solid #ccc; padding: 10px; margin-bottom: 20px; position: relative;">
-                <h3>Title: <a href="{% url 'view_post' blog.slug %}">{{ blog.title }}</a></h3>
-                <p>Author: {{ blog.author }}</p>
-                <a href="{% url 'add_comment' blog.slug %}" style="position: absolute; bottom: 10px; right: 10px; background-color: #0366d6; color: #fff; padding: 5px 10px; border-radius: 5px; text-decoration: none;">Add Comment</a>
+    <div style="max-width: 800px; margin: 0 auto; padding: 20px;">
+        <h1 style="font-size: 32px; margin-bottom: 20px; color: #333;">Home Page</h1>
+        {% if user.is_authenticated %}
+            <p style="font-size: 24px; margin-bottom: 40px;">Welcome, <span style="color: #0366d6;">{{ user.username }}</span>!</p>
+        {% else %}
+            <p style="font-size: 24px; margin-bottom: 40px;">Welcome, guest!</p>
+        {% endif %}
 
-                {% if user.is_authenticated and user == blog.author %}
-                    <form method="POST" action="{% url 'delete_post' blog.slug %}" style="position: absolute; bottom: 10px; right: 150px;">
-                        {% csrf_token %}
-                        <button type="submit" style="background-color: #d73a49; color: #fff; padding: 5px 10px; border-radius: 5px; border: none;">Delete Post</button>
-                    </form>
-                {% endif %}
-            </div>
+
+        <div style="margin-bottom: 20px;">
+        <form method="GET" style="display: flex; justify-content: center;">
+            {{ form.authors }}
+            {{ form.topics }}
+            <button type="submit" style="padding: 10px 20px; font-size: 16px; background-color: #0366d6; color: #fff; border: none; border-radius: 5px; cursor: pointer;">Filter</button>
+        </form>
+        </div>
+
+        <h2 style="font-size: 24px; margin-bottom: 20px; color: #333;">Blog:</h2>
+
+        <div>
+            {% for blog in blogs %}
+                <div style="border: 1px solid #ccc; padding: 10px; margin-bottom: 20px;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                        <h3 style="font-size: 24px; margin-bottom: 10px; font-weight: bold;"><a href="{% url 'view_post' blog.slug %}" style="color: #0366d6; text-decoration: none;">{{ blog.title }}</a></h3>
+                        <div>
+                            <a href="{% url 'add_comment' blog.slug %}" style="font-size: 14px; color: #0366d6; text-decoration: none; margin-right: 10px;">Add Comment</a>
+                            {% if user.is_authenticated and user == blog.author %}
+                                <form method="POST" action="{% url 'delete_post' blog.slug %}" style="display: inline-block;">
+                                    {% csrf_token %}
+                                    <button type="submit" style="font-size: 14px; color: #d73a49; background-color: transparent; border: none; cursor: pointer;">Delete Post</button>
+                                </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <p style="font-size: 16px; margin-bottom: 5px;"><span style="font-weight: bold;">Topic:</span> {{ blog.topic }}</p>
+                    <p style="font-size: 16px; margin-bottom: 5px;"><span style="font-weight: bold;">Author:</span> {{ blog.author }}</p>
+                </div>
             {% endfor %}
+        </div>
+    </div>
 {% endblock %}
+
+
+
+
+
+

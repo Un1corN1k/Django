@@ -1,21 +1,33 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .forms import PostModelForm, CommentModelForm
+from .forms import PostModelForm, CommentModelForm, TopicModelForm, FilterForm
+from django.views.generic import ListView
 from .models import BlogPost
 from django.contrib.auth.decorators import login_required
 
 
 def home(request):
+    form = FilterForm(request.GET)
     blogs = BlogPost.objects.all()
 
-    topic_filter = request.GET.get('topic')
-    if topic_filter:
-        blogs = blogs.filter(topic=topic_filter)
+    if form.is_valid():
+        author_filter = form.cleaned_data['authors']
+
+
+        if author_filter:
+            blogs = blogs.filter(author=author_filter)
+
+
+
 
     search_query = request.GET.get('search')
     if search_query:
         blogs = blogs.filter(title__icontains=search_query)
 
-    return render(request, 'post/home.html', {'blogs': blogs})
+    context = {
+        'blogs': blogs,
+        'form': form,
+    }
+    return render(request, 'post/home.html', context)
 
 
 def view_post(request, slug):
@@ -72,3 +84,17 @@ def delete_post(request, slug):
     else:
         return redirect('post/home')
 
+
+@login_required
+def create_topic(request):
+    if request.method == 'POST':
+        form = TopicModelForm(request.POST)
+        if form.is_valid():
+            topic = form.save(commit=False)
+            topic.author = request.user
+            topic.save()
+            return redirect('/')
+    else:
+        form = TopicModelForm()
+
+    return render(request, 'post/create_topic.html', {'form': form})

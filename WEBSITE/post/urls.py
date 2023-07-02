@@ -8,4 +8,5 @@ urlpatterns = [
     path('create/', create_post, name='create_post'),
     path('delete_post/<slug:slug>/', delete_post, name='delete_post'),
     path('view_post/<slug:slug>/', view_post, name='view_post'),
+    path('create_topic/', create_topic, name='create_topic')
 ]

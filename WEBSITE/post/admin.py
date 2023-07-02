@@ -9,7 +9,7 @@ class BlogAdmin(admin.ModelAdmin):
 
 @admin.register(Topic)
 class TopicAdmin(admin.ModelAdmin):
-    list_display = ["topic", 'description']
+    list_display = ["id", "topic", 'description']
 
 
 @admin.register(Comment)

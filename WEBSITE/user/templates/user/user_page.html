@@ -1,67 +1,97 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <h1>Hello,{{ request.user }} this is your private page</h1>
+<style>
+.card {
+border: 1px solid #ccc;
+border-radius: 5px;
+padding: 10px;
+margin-bottom: 10px;
+}.card-header {
+        background-color: #f6f8fa;
+        padding: 10px;
+        border-bottom: 1px solid #ccc;
+    }
 
-    {% if user.is_authenticated %}
-        <div style="text-align: right;">
-            <a href="{% url 'change_password' %}" style="background-color: #0366d6; color: #fff; padding: 10px 20px; border-radius: 5px; text-decoration: none;">Change Password</a>
+    .card-body {
+        padding: 10px;
+    }
+
+    .btn-primary {
+        background-color: #0366d6;
+        color: #fff;
+        padding: 10px 20px;
+        border-radius: 5px;
+        text-decoration: none;
+    }
+</style>
+
+<h1>Hello, {{ request.user }}! This is your private page</h1>
+
+{% if user.is_authenticated %}
+    <div style="text-align: right;">
+        <a href="{% url 'change_password' %}" class="btn-primary">Change Password</a>
+    </div>
+{% endif %}
+
+<h1>Your actions</h1>
+
+<h2>Posts:</h2>
+{% if user.is_authenticated %}
+    {% for post in request.user.blogpost_set.all %}
+        <div class="card">
+            <div class="card-header">
+                <h3>{{ post.title }}</h3>
+            </div>
+            <div class="card-body">
+                <p>{{ post.content }}</p>
+            </div>
         </div>
-    {% endif %}
+    {% empty %}
+        <p>No posts found.</p>
+    {% endfor %}
+{% else %}
+    <p>Please log in to view your posts.</p>
+{% endif %}
 
-    <h1>Your actions</h1>
-
-    <h2>Posts:</h2>
-    {% if user.is_authenticated %}
-        {% for post in user.posts.all %}
-            <div class="card" style="border: 1px solid #ccc; border-radius: 5px; padding: 10px; margin-bottom: 10px;">
-                <div class="card-header" style="background-color: #f6f8fa; padding: 10px; border-bottom: 1px solid #ccc;">
-                    <h3>{{ post.title }}</h3>
-                </div>
-                <div class="card-body" style="padding: 10px;">
-                    <p>{{ post.content }}</p>
-                </div>
+<h2>Topics:</h2>
+{% if user.is_authenticated %}
+    {% for topic in request.user.topic_set.all %}
+        <div class="card">
+            <div class="card-header">
+                <h3>{{ topic.topic }}</h3>
             </div>
-        {% empty %}
-            <p>No posts found.</p>
-        {% endfor %}
-    {% else %}
-        <p>Please log in to view your posts.</p>
-    {% endif %}
-
-    <h2>Topics:</h2>
-    {% if user.is_authenticated %}
-        {% for topic in user.topics.all %}
-            <div class="card" style="border: 1px solid #ccc; border-radius: 5px; padding: 10px; margin-bottom: 10px;">
-                <div class="card-header" style="background-color: #f6f8fa; padding: 10px; border-bottom: 1px solid #ccc;">
-                    <h3>{{ topic.title }}</h3>
-                </div>
-                <div class="card-body" style="padding: 10px;">
-                    <p>{{ topic.content }}</p>
-                </div>
+            <div class="card-body">
+                <p>{{ topic.description }}</p>
             </div>
-        {% empty %}
-            <p>No topics found.</p>
-        {% endfor %}
-    {% else %}
-        <p>Please log in to view your topics.</p>
-    {% endif %}
+        </div>
+    {% empty %}
+        <p>No topics found.</p>
+    {% endfor %}
 
-    <h2>Comments:</h2>
-    {% if user.is_authenticated %}
-        {% for comment in user.comments.all %}
-            <div class="card" style="border: 1px solid #ccc; border-radius: 5px; padding: 10px; margin-bottom: 10px;">
-                <div class="card-body" style="padding: 10px;">
-                    <p>{{ comment.content }}</p>
-                    <p>Post: {{ comment.post }}</p>
-                    <p>Topic: {{ comment.topic }}</p>
-                </div>
+<div style="margin-top: 20px;">
+    <a href="{% url 'create_topic' %}" class="btn-primary">Create Topic</a>
+</div>
+
+{% else %}
+    <p>Please log in to view your topics.</p>
+{% endif %}
+
+
+
+<h2>Comments:</h2>
+{% if user.is_authenticated %}
+    {% for comment in request.user.comment_set.all %}
+        <div class="card">
+            <div class="card-body">
+                <p><strong>Comment:</strong> {{ comment.content }}</p>
+                <p><strong>Date:</strong> {{ comment.created_at }}</p>
             </div>
-        {% empty %}
-            <p>No comments found.</p>
-        {% endfor %}
-    {% else %}
-        <p>Please log in to view your comments.</p>
-    {% endif %}
-
+        </div>
+    {% empty %}
+        <p>No comments found.</p>
+    {% endfor %}
+{% else %}
+    <p>Please log in to view your comments.</p>
+{% endif %}
 {% endblock %}
