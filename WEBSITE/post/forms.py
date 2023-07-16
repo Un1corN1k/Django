@@ -1,4 +1,5 @@
 from django import forms
+
 from .models import BlogPost, Comment, Topic
 from django.contrib.auth.models import User
 
@@ -29,4 +30,3 @@ class FilterForm(forms.Form):
         queryset=User.objects.filter(id__in=BlogPost.objects.values_list('author_id', flat=True).distinct()),
         empty_label="All Authors",
         required=False)
-

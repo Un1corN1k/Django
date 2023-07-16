@@ -1,4 +1,9 @@
+
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
+from django.utils.decorators import method_decorator
+from django.views.generic import CreateView
+
 from .forms import PostModelForm, CommentModelForm, TopicModelForm, FilterForm
 from .models import BlogPost
 from django.views import View
@@ -35,6 +40,7 @@ class ViewPostView(View):
 
 
 class AddCommentView(View):
+    @method_decorator(login_required(login_url='user/login'))
     def get(self, request, slug):
         blog = get_object_or_404(BlogPost, slug=slug)
         form = CommentModelForm()
@@ -44,6 +50,7 @@ class AddCommentView(View):
         }
         return render(request, 'post/add_comment.html', context)
 
+    @method_decorator(login_required(login_url='user/login'))
     def post(self, request, slug):
         blog = get_object_or_404(BlogPost, slug=slug)
         form = CommentModelForm(request.POST)
@@ -61,28 +68,16 @@ class AddCommentView(View):
         return render(request, 'post/add_comment.html', context)
 
 
-class CreatePostView(View):
-    def get(self, request):
-        if not request.user.is_authenticated:
-            return redirect('post/login')
+class CreatePostView(LoginRequiredMixin, CreateView):
+    model = BlogPost
+    form_class = PostModelForm
+    template_name = 'post/create_post.html'
+    success_url = '/'
 
-        form = PostModelForm()
-        context = {'form': form}
-        return render(request, 'post/create_post.html', context)
+    def form_valid(self, form):
+        form.instance.author = self.request.user
+        return super().form_valid(form)
 
-    def post(self, request):
-        if not request.user.is_authenticated:
-            return redirect('post/login')
-
-        form = PostModelForm(request.POST)
-        if form.is_valid():
-            post = form.save(commit=False)
-            post.author = request.user
-            post.save()
-            return redirect('/')
-
-        context = {'form': form}
-        return render(request, 'post/create_post.html', context)
 
 class DeletePostView(LoginRequiredMixin, View):
     def post(self, request, slug):

@@ -11,9 +11,10 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 
 class LoginView(View):
     def post(self, request):
-        form = AuthenticationForm(request, data=request.POST)
+        form = AuthenticationForm(data=request.POST)
         if form.is_valid():
-            login(request, form.get_user())
+            user = form.user
+            login(request, user)
             return HttpResponseRedirect('/')
 
         return render(request, 'user/login.html', {'form': form})

@@ -33,7 +33,17 @@
                     <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                         <h3 style="font-size: 24px; margin-bottom: 10px; font-weight: bold;"><a href="{% url 'view_post' blog.slug %}" style="color: #0366d6; text-decoration: none;">{{ blog.title }}</a></h3>
                         <div>
-                            <a href="{% url 'add_comment' blog.slug %}" style="font-size: 14px; color: #0366d6; text-decoration: none; margin-right: 10px;">Add Comment</a>
+                            <div>
+    {% if user.is_authenticated %}
+        <div style="margin-bottom: 20px;">
+            <form method="POST" action="{% url 'add_comment' blog.slug %}" style="display: flex; justify-content: center;">
+                {% csrf_token %}
+                {{ form.comment }}
+                <button type="submit" style="padding: 10px 20px; font-size: 16px; background-color: #0366d6; color: #fff; border: none; border-radius: 5px; cursor: pointer;">Add Comment</button>
+            </form>
+        </div>
+    {% endif %}
+</div>
                             {% if user.is_authenticated and user == blog.author %}
                                 <form method="POST" action="{% url 'delete_post' blog.slug %}" style="display: inline-block;">
                                     {% csrf_token %}
@@ -49,9 +59,3 @@
         </div>
     </div>
 {% endblock %}
-
-
-
-
-
-

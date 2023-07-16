@@ -53,7 +53,6 @@
     <h1>{{ post.title }}</h1>
     <p>Topic: {{ post.topic }}</p>
 
-
     <div>
         <p>Content: {{ post.content }}</p>
         <p>Author: {{ post.author }}</p>
@@ -61,6 +60,9 @@
 
     <h2>Comments:</h2>
     <div class="comments-container">
+        {% if user.is_authenticated %}
+            <a href="{% url 'add_comment' post.slug %}" class="add-comment-link">Add Comment</a>
+        {% endif %}
         {% for comment in post.comments.all %}
             <div class="comment">
                 <div class="comment-header">
@@ -73,7 +75,5 @@
             <p>No comments found.</p>
         {% endfor %}
     </div>
-
-    <a href="{% url 'add_comment' post.slug %}" class="add-comment-link">Add Comment</a>
 {% endblock %}
 
