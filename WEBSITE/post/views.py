@@ -1,71 +1,69 @@
-
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import PermissionDenied
 from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
-from django.views.generic import CreateView
-
+from django.views.generic import CreateView, ListView, DetailView, FormView, DeleteView
 from .forms import PostModelForm, CommentModelForm, TopicModelForm, FilterForm
-from .models import BlogPost
+from .models import BlogPost, Topic
 from django.views import View
 from django.contrib.auth.mixins import LoginRequiredMixin
 
 
-class HomeView(View):
-    def get(self, request):
-        form = FilterForm(request.GET)
-        blogs = BlogPost.objects.all()
+class HomeView(ListView):
+    model = BlogPost
+    template_name = 'post/home.html'
+    context_object_name = 'blogs'
+    paginate_by = 10
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        form = FilterForm(self.request.GET)
 
         if form.is_valid():
             author_filter = form.cleaned_data['authors']
 
             if author_filter:
-                blogs = blogs.filter(author=author_filter)
+                queryset = queryset.filter(author=author_filter)
 
-        search_query = request.GET.get('search')
+        search_query = self.request.GET.get('search')
         if search_query:
-            blogs = blogs.filter(title__icontains=search_query)
+            queryset = queryset.filter(title__icontains=search_query)
 
-        context = {
-            'blogs': blogs,
-            'form': form,
-        }
-        return render(request, 'post/home.html', context)
+        return queryset
 
-
-class ViewPostView(View):
-    def get(self, request, slug):
-        post = get_object_or_404(BlogPost, slug=slug)
-        context = {'post': post}
-        return render(request, 'post/view_post.html', context)
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['form'] = FilterForm(self.request.GET)
+        return context
 
 
-class AddCommentView(View):
-    @method_decorator(login_required(login_url='user/login'))
-    def get(self, request, slug):
+class ViewPostView(DetailView):
+    model = BlogPost
+    template_name = 'post/view_post.html'
+    context_object_name = 'post'
+    slug_url_kwarg = 'slug'
+
+
+class AddCommentView(FormView):
+    template_name = 'post/add_comment.html'
+    form_class = CommentModelForm
+
+    def form_valid(self, form):
+        slug = self.kwargs['slug']
         blog = get_object_or_404(BlogPost, slug=slug)
-        form = CommentModelForm()
-        context = {
-            'blog': blog,
-            'form': form
-        }
-        return render(request, 'post/add_comment.html', context)
+        comment = form.save(commit=False)
+        comment.blog = blog
+        comment.author = self.request.user
+        comment.save()
+        return redirect('view_post', slug=slug)
 
-    @method_decorator(login_required(login_url='user/login'))
-    def post(self, request, slug):
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        slug = self.kwargs['slug']
         blog = get_object_or_404(BlogPost, slug=slug)
-        form = CommentModelForm(request.POST)
-        if form.is_valid():
-            comment = form.save(commit=False)
-            comment.blog = blog
-            comment.author = request.user
-            comment.save()
-            return redirect('view_post', slug=slug)
-
-        context = {
-            'blog': blog,
-            'form': form
-        }
-        return render(request, 'post/add_comment.html', context)
+        context['blog'] = blog
+        return context
 
 
 class CreatePostView(LoginRequiredMixin, CreateView):
@@ -79,36 +77,24 @@ class CreatePostView(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
-class DeletePostView(LoginRequiredMixin, View):
-    def post(self, request, slug):
-        blog = get_object_or_404(BlogPost, slug=slug)
+class DeletePostView(LoginRequiredMixin, DeleteView):
+    model = BlogPost
+    template_name = 'post/delete_post.html'
+    success_url = reverse_lazy('post/home')
 
-        if request.user == blog.author:
-            blog.delete()
-            return redirect("/")
-
-        return redirect('post/home')
-
-    def get(self, request, slug):
-        blog = get_object_or_404(BlogPost, slug=slug)
-
-        if request.user == blog.author:
-            return render(request, 'post/delete_post.html', {'blog': blog})
-
-        return redirect('post/home')
+    def get_object(self, queryset=None):
+        obj = super().get_object(queryset=queryset)
+        if self.request.user != obj.author:
+            raise PermissionDenied
+        return obj
 
 
-class CreateTopicView(LoginRequiredMixin, View):
-    def post(self, request):
-        form = TopicModelForm(request.POST)
-        if form.is_valid():
-            topic = form.save(commit=False)
-            topic.author = request.user
-            topic.save()
-            return redirect('/')
+class CreateTopicView(LoginRequiredMixin, CreateView):
+    model = Topic
+    form_class = TopicModelForm
+    template_name = 'post/create_topic.html'
+    success_url = reverse_lazy('home')
 
-        return render(request, 'post/create_topic.html', {'form': form})
-
-    def get(self, request):
-        form = TopicModelForm()
-        return render(request, 'post/create_topic.html', {'form': form})
+    def form_valid(self, form):
+        form.instance.author = self.request.user
+        return super().form_valid(form)

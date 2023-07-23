@@ -1,5 +1,5 @@
 from django.urls import path, include
-from django.contrib.auth import views as auth_views
+
 from .views import (
     HomeView,
     AddCommentView,
@@ -8,6 +8,7 @@ from .views import (
     ViewPostView,
     CreateTopicView,
 )
+
 urlpatterns = [
     path('', HomeView.as_view(), name='home'),
     path('user/', include('user.urls')),
